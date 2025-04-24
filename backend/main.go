@@ -3,6 +3,7 @@ package main
 import (
   "net/http"
 
+  "github.com/gin-contrib/cors" 
   "github.com/gin-gonic/gin"
   "gorm.io/driver/sqlite"
   "gorm.io/gorm"
@@ -49,6 +50,8 @@ func getTodos(c *gin.Context) {
 
 func main() {
   r := gin.Default()
+
+  r.Use(cors.Default())
 
   initDB()
   // 新規追加
