@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
+      - todo_data:/app/data # ← ここをファイルではなく「ディレクトリ」に！
     working_dir: /app
     command: go run main.go
 
@@ -22,3 +23,6 @@ services:
     command: npm run dev
     depends_on:
       - backend
+
+volumes:
+  todo_data:
