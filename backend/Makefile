@@ -1,4 +1,4 @@
-GO_IMAGE=golang:1.21
+GO_IMAGE=golang:1.24
 APP_DIR=$(shell pwd)
 
 get:
@@ -22,5 +22,14 @@ down:
 logs:
 	docker-compose logs -f backend
 
-watch:
-	watchexec -e go -r -w . "make build && make up"
+# 🔧 追加：バックエンドだけビルド
+build-backend:
+	docker-compose build --no-cache backend
+
+# 🔧 追加：バックエンドだけ起動
+up-backend:
+	docker-compose up -d backend
+
+# 🔧 追加：Goファイル変更時に backend を自動ビルド＆再起動
+watch-backend:
+	watchexec -e go -r -w . "make build-backend && make up-backend"

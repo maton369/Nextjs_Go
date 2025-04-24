@@ -2,6 +2,7 @@ package main
 
 import (
   "net/http"
+  "strconv"
 
   "github.com/gin-contrib/cors" 
   "github.com/gin-gonic/gin"
@@ -48,6 +49,54 @@ func getTodos(c *gin.Context) {
   c.JSON(http.StatusOK, todos)
 }
 
+func updateTodo(c *gin.Context){
+  idParam := c.Param("id") 
+  id, err := strconv.Atoi(idParam)
+  if err != nil {
+	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	return
+  }
+	
+  var todo Todo
+  if err := db.First(&todo, id).Error; err != nil {
+	c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+	return
+  }
+
+  //リクエストボディを一時的な変数にバインドする
+  var input Todo
+  if err := c.ShouldBindJSON(&input); err != nil {
+    c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    return
+  }
+
+  //値を更新
+  todo.Title = input.Title
+  todo.Completed = input.Completed
+
+  db.Save(&todo)
+  c.JSON(http.StatusOK, todo)
+}
+
+
+func deleteTodo(c *gin.Context){
+  idParam := c.Param("id") 
+  id, err := strconv.Atoi(idParam)
+  if err != nil {
+ 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+ 	return
+  }
+	
+  var todo Todo
+  if err := db.First(&todo, id).Error; err != nil {
+ 	c.JSON(http.StatusNotFound, gin.H{"error": "Todo not found"})
+	return
+  }
+
+  db.Delete(&todo)
+  c.JSON(http.StatusOK, gin.H{"message": "Todo deleted"})
+}
+
 func main() {
   r := gin.Default()
 
@@ -59,6 +108,11 @@ func main() {
 
   // 一覧取得
   r.GET("/todos", getTodos)
+
+  // 編集
+r.PUT("/todos/:id", updateTodo)
+
+  r.DELETE("/todos/:id", deleteTodo)
 
   // サーバー起動
   r.Run(":8080")
